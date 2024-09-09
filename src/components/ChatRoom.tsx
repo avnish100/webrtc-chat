@@ -84,16 +84,37 @@ export default function ChatRoom() {
     }
   }
 
-  const handleExit = () => {
-    if (peerId) {
-      signalingRef.current?.send(JSON.stringify({
-        type: 'peer-disconnected',
-        room,
-        peerId
-      }))
+  const handleExit = async () => {
+    try {
+      // Call the updated API route to leave the room
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ room, action: 'leave' }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to leave the room');
+      }
+  
+      // Handle peer disconnection if a peerId exists
+      if (peerId) {
+        signalingRef.current?.send(JSON.stringify({
+          type: 'peer-disconnected',
+          room,
+          peerId
+        }));
+      }
+  
+      // Close the signaling connection
+      signalingRef.current?.close();
+  
+      // Redirect to the landing page
+      await router.push('/landing');
+    } catch (error) {
+      console.error('Error during exit:', error);
+      // You might want to show an error message to the user here
     }
-    signalingRef.current?.close()
-    router.push('/')
   }
 
   const sendMessage = () => {

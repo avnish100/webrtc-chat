@@ -19,7 +19,7 @@ export default function ChatForm() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name, room }),
+          body: JSON.stringify({ name, room,action:'join' }),
         })
   
         if (res.ok) {

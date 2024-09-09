@@ -32,7 +32,7 @@ async function joinChat(room: string, userName:string): Promise<Room | null> {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ room }),
+      body: JSON.stringify({ room,action:'join' }),
     });
     
     if (!response.ok) {

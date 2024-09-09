@@ -29,27 +29,53 @@ export async function GET(): Promise<NextResponse<Room[] | { error: string }>> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<Room | { error: string }>> {
-  try {
-    const { room }: { room: string } = await request.json();
-
-    const existingRoom = await prisma.room.findFirst({
-      where: { name:room },
-    });
-
-    if (existingRoom) {
-      const updatedRoom = await prisma.room.update({
-        where: { id: existingRoom.id },
-        data: { participants: { increment: 1 } },
-      });
-      return NextResponse.json(updatedRoom);
-    } else {
-      const newRoom = await prisma.room.create({
-        data: { name: room, participants: 1 },
-      });
-      return NextResponse.json(newRoom);
-    }
-  } catch (error) {
-    console.error('Failed to create/update chat room:', error);
-    return NextResponse.json({ error: 'Failed to create/update chat room' }, { status: 500 });
-  }
+    try {
+        const { room, action }: { room: string; action: 'join' | 'leave' } = await request.json();
+    
+        const existingRoom = await prisma.room.findFirst({
+          where: { name: room },
+        });
+    
+        if (action === 'join') {
+          if (existingRoom) {
+            console.log('Increment')
+            const updatedRoom = await prisma.room.update({
+              where: { id: existingRoom.id },
+              data: { participants: { increment: 1 } },
+            });
+            return NextResponse.json(updatedRoom);
+          } else {
+            const newRoom = await prisma.room.create({
+              data: { name: room, participants: 1 },
+            });
+            return NextResponse.json(newRoom);
+          }
+        } else if (action === 'leave') {
+          if (existingRoom) {
+            console.log('Decrement')
+            if (existingRoom.participants > 1) {
+              const updatedRoom = await prisma.room.update({
+                where: { id: existingRoom.id },
+                data: { participants: { decrement: 1 } },
+              });
+              return NextResponse.json(updatedRoom);
+            } else {
+              // Delete the room if it's the last participant
+              await prisma.room.delete({
+                where: { id: existingRoom.id },
+              });
+              return NextResponse.json({ message: 'Room deleted' });
+            }
+          } else {
+            return NextResponse.json({ error: 'Room not found' }, { status: 404 });
+          }
+        } else {
+          return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        }
+      } catch (error) {
+        console.error('Failed to update chat room:', error);
+        return NextResponse.json({ error: 'Failed to update chat room' }, { status: 500 });
+      }
 }
+
+
