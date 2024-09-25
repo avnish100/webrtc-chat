@@ -61,10 +61,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Room | { 
               return NextResponse.json(updatedRoom);
             } else {
               // Delete the room if it's the last participant
-              await prisma.room.delete({
+              const deletedRoom = await prisma.room.delete({
                 where: { id: existingRoom.id },
               });
-              return NextResponse.json({ message: 'Room deleted' });
+              return NextResponse.json(deletedRoom);
             }
           } else {
             return NextResponse.json({ error: 'Room not found' }, { status: 404 });
