@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { useRouter } from 'next/navigation'
 import { useState } from "react"
 import { redirect,} from "next/navigation";
-import hero from "C:/Users/avi/Desktop/COde/webrtc-chat/public/image.png"
+import hero from "../../../../public/image.png"
 
 
 export default function Dashboard() {
